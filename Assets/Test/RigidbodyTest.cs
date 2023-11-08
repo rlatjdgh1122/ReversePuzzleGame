@@ -16,6 +16,7 @@ public class RigidbodyTest : MonoBehaviour
     {
         //이해를 돕기 위해서 Vector3.right 사용
         if (Input.GetKeyDown(KeyCode.E))
-            _rb.AddForce(Vector3.right * Power, ForceMode.Impulse);
+            Physics.gravity = new Vector2(9.8f, 0);
+        // _rb.AddForce(Vector3.right * Power, ForceMode.Impulse);
     }
 }
