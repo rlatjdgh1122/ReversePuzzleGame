@@ -8,8 +8,8 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float MoveSpeed = 3;
 
-    public void Join_OnMovement(Vector3 value)
+    public void OnMovementEvent(Vector3 value)
     {
-
+        transform.Translate(value * MoveSpeed * Time.deltaTime,Space.Self);
     }
 }
