@@ -10,6 +10,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnMovementEvent(Vector3 value)
     {
-        transform.Translate(value * MoveSpeed * Time.deltaTime);
+        transform.Translate(value * MoveSpeed * Time.deltaTime, Space.World);
     }
 }
