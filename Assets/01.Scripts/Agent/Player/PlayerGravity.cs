@@ -1,25 +1,57 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.InputSystem.iOS;
+using UnityEngine.Rendering;
 
 public class PlayerGravity : MonoBehaviour
 {
     [SerializeField] private Transform pivot;
     [SerializeField] private float gravityPower;
 
-    [SerializeField] private float rev_castingTime = 1f; //시전시간
 
-    private ConstantForce _gravityForce;
+    [SerializeField] private float rev_castingTime = 1f; //시전시간
 
     private Vector3 _curDir = Vector3.zero;
     private Vector3 _endDir = Vector3.zero;
 
     private Coroutine rotCoroutine = null;
+
+    private Rigidbody _rb;
+
     private void Awake()
     {
-        _gravityForce = transform.root.GetComponent<ConstantForce>();
+        _rb = transform.root.GetComponent<Rigidbody>();
+    }
+
+    private void Start()
+    {
+        _rb.useGravity = false;
+
+        OnRegister();
+    }
+
+    private void FixedUpdate()
+    {
+        if (_rb != null)
+        {
+            _rb.AddForce(-transform.root.up * gravityPower, ForceMode.Acceleration); //가속하는 힘
+        }
+    }
+    private void OnRegister()
+    {
+        SignalHub.OnJumpEventHandled += OnJump;
+    }
+
+    private void OnDestroy()
+    {
+        SignalHub.OnJumpEventHandled -= OnJump;
+    }
+    private void OnJump(float power)
+    {
+        _rb.AddForce(transform.root.up * (power), ForceMode.Impulse); // 순간적인 힘
     }
 
     public void OnPlayerReverseGravity(Vector3 value)
@@ -42,17 +74,19 @@ public class PlayerGravity : MonoBehaviour
             t += Time.deltaTime;
 
             _curDir = Vector3.Lerp(startDir, value, t / rev_castingTime);
-            pivot.rotation = Quaternion.Euler(_curDir); //포지션 돌리기
-
+            //pivot.localRotation *= Quaternion.AngleAxis(90, transform.up); //포지션 돌리기
+            //pivot.Rotate(_curDir, Space.World);
             yield return null;
         }
-        pivot.rotation = Quaternion.Euler(_curDir);
+        pivot.localRotation *= Quaternion.AngleAxis(90, transform.forward); //포지션 돌리기
+
+        //pivot.Rotate(_curDir, Space.World);
     }
 
     private Vector3 GetReverseDiraction(Vector3 value)
     {
         _curDir = _endDir;
-
+        Debug.Log(value);
         if (Mathf.Abs(value.x) > Mathf.Abs(value.z))
         {
             if (value.x > 0) //오른쪽

@@ -1,3 +1,5 @@
+using System;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,6 +16,7 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] private UnityEvent<Vector3> OnReverseGravityEvent = null;
     [SerializeField] private UnityEvent<float, float> OnRotateEvent = null;
     [SerializeField] private UnityEvent<Vector3> OnMovementEvent = null;
+    [SerializeField] private UnityEvent OnJumpEvent = null;
 
     #region 프로퍼티 변수
     #endregion
@@ -26,12 +29,22 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
+        //점프 처리
+        PlayerJump();
         //플레이어 중력 반전
         PlayerReverseGravity();
         //움직임 처리
         PlayerMovement();
         // 회전 처리
         PlayerRotate();
+    }
+
+    private void PlayerJump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            OnJumpEvent?.Invoke();
+        }
     }
 
     private void PlayerReverseGravity()
@@ -51,8 +64,10 @@ public class PlayerInput : MonoBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        // 이동 방향 설정
-        moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+        // 이동 방향 설정 (카메라 보는 기준)
+        moveDirection =
+            (transform.right * horizontal
+            + transform.forward * vertical).normalized;
 
         OnMovementEvent?.Invoke(moveDirection);
     }
@@ -61,7 +76,6 @@ public class PlayerInput : MonoBehaviour
         // 마우스 입력 받기
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
-        Debug.Log($"마우스 X : {mouseX} , 마우스 Y : {mouseY}");
 
         OnRotateEvent?.Invoke(mouseX, mouseY);
     }
