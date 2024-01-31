@@ -74,28 +74,31 @@ public class PlayerGravity : MonoBehaviour
             t += Time.deltaTime;
 
             _curDir = Vector3.Lerp(startDir, value, t / rev_castingTime);
-            //pivot.localRotation *= Quaternion.AngleAxis(90, transform.up); //포지션 돌리기
+            pivot.rotation = Quaternion.Euler(_curDir); //포지션 돌리기
             //pivot.Rotate(_curDir, Space.World);
             yield return null;
         }
-        pivot.localRotation *= Quaternion.AngleAxis(90, transform.forward); //포지션 돌리기
-
+        pivot.rotation = Quaternion.Euler(_curDir);
         //pivot.Rotate(_curDir, Space.World);
     }
 
-    private Vector3 GetReverseDiraction(Vector3 value)
+    private Vector3 GetReverseDiraction(Vector3 value1)
     {
         _curDir = _endDir;
-        Debug.Log(value);
+
+        Vector3 value = (value1 - transform.up).normalized;
+
         if (Mathf.Abs(value.x) > Mathf.Abs(value.z))
         {
             if (value.x > 0) //오른쪽
             {
                 _endDir += new Vector3(0, 0, 90);
+                Debug.Log("오");
             }
             else if (value.x < 0) //왼쪽
             {
                 _endDir += new Vector3(0, 0, -90);
+                Debug.Log("왼");
             }
         }
 
@@ -104,10 +107,12 @@ public class PlayerGravity : MonoBehaviour
             if (value.z > 0) //앞쪽
             {
                 _endDir += new Vector3(-90, 0, 0);
+                Debug.Log("앞");
             }
             else if (value.z < 0) //뒤쪽
             {
                 _endDir += new Vector3(90, 0, 0);
+                Debug.Log("뒤");
             }
         }
         else if (Mathf.Abs(value.x - value.z) <= 0) //가만히 있었을때
@@ -116,5 +121,13 @@ public class PlayerGravity : MonoBehaviour
         }
 
         return _endDir;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        var pos = transform.TransformPoint(0, 0, 1f);
+        Gizmos.DrawWireSphere(pos, .5f);
+
     }
 }
