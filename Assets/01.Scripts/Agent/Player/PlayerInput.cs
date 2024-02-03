@@ -14,7 +14,7 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] private float rev_coolTime = 3f; //쿨타임
 
     [Header("연결 이벤트")]
-    [SerializeField] private UnityEvent<Vector3> OnReverseGravityEvent = null;
+    [SerializeField] private UnityEvent<KeyCode> OnReverseGravityEvent = null;
     [SerializeField] private UnityEvent<float, float> OnRotateEvent = null;
     [SerializeField] private UnityEvent<Vector3> OnMovementEvent = null;
     [SerializeField] private UnityEvent OnJumpEvent = null;
@@ -23,6 +23,8 @@ public class PlayerInput : MonoBehaviour
     #endregion
 
     #region 일반 변수
+    public Vector2Int ipt_value = Vector2Int.zero;
+    public KeyCode iptKey = KeyCode.None;
 
     private float rev_curTime = 0f;
     private Vector3 moveDirection = Vector3.zero;
@@ -50,12 +52,36 @@ public class PlayerInput : MonoBehaviour
 
     private void PlayerReverseGravity()
     {
+        if (Mathf.Abs(ipt_value.x) != Mathf.Abs(ipt_value.y))
+        {
+            if (0 < ipt_value.y) //앞
+            {
+                iptKey = KeyCode.W;
+            }
+            else if (0 > ipt_value.y) //뒤
+            {
+                iptKey = KeyCode.S;
+
+            }
+            else if (0 < ipt_value.x) //오
+            {
+                iptKey = KeyCode.D;
+            }
+            else if (0 > ipt_value.x) //왼
+            {
+                iptKey = KeyCode.A;
+            }
+        }
+        else if (Mathf.Abs(ipt_value.x) + Mathf.Abs(ipt_value.y) == 0) //가만히 있을때
+            iptKey = KeyCode.None;
+        else //대각선으로 이동할때는 작동안하게
+            iptKey = KeyCode.PageUp;
+
         rev_curTime += Time.deltaTime;
         if (rev_curTime > rev_coolTime
             && Input.GetKeyDown(rev_key))
         {
-            OnReverseGravityEvent?.Invoke(moveDirection);
-
+            OnReverseGravityEvent?.Invoke(iptKey);
             rev_curTime = 0f;
         }
     }
@@ -64,6 +90,8 @@ public class PlayerInput : MonoBehaviour
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
+
+        ipt_value = new Vector2Int((int)horizontal, (int)vertical);
 
         // 이동 방향 설정 (카메라 보는 기준)
         moveDirection =

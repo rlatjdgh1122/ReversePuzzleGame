@@ -1,21 +1,16 @@
-using System;
+using Cinemachine.Utility;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem.iOS;
-using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class PlayerGravity : MonoBehaviour
 {
     [SerializeField] private Transform pivot;
     [SerializeField] private float gravityPower;
 
-
-    [SerializeField] private float rev_castingTime = 1f; //시전시간
-
-    private Vector3 _curDir = Vector3.zero;
-    private Vector3 _endDir = Vector3.zero;
+    [SerializeField] private float rev_castingTime = 1f;
 
     private Coroutine rotCoroutine = null;
 
@@ -29,34 +24,19 @@ public class PlayerGravity : MonoBehaviour
     private void Start()
     {
         _rb.useGravity = false;
-
-        OnRegister();
     }
 
     private void FixedUpdate()
     {
         if (_rb != null)
         {
-            _rb.AddForce(-transform.root.up * gravityPower, ForceMode.Acceleration); //가속하는 힘
+            _rb.AddForce(-transform.root.up * gravityPower, ForceMode.Acceleration);
         }
     }
-    private void OnRegister()
-    {
-        SignalHub.OnJumpEventHandled += OnJump;
-    }
 
-    private void OnDestroy()
+    public void OnPlayerReverseGravity(KeyCode value)
     {
-        SignalHub.OnJumpEventHandled -= OnJump;
-    }
-    private void OnJump(float power)
-    {
-        _rb.AddForce(transform.root.up * (power), ForceMode.Impulse); // 순간적인 힘
-    }
-
-    public void OnPlayerReverseGravity(Vector3 value)
-    {
-        Vector3 getDir = GetReverseDiraction(value);
+        Quaternion getDir = GetReverseDirection(value);
 
         if (rotCoroutine != null)
         {
@@ -65,69 +45,67 @@ public class PlayerGravity : MonoBehaviour
         rotCoroutine = StartCoroutine(RotateCoroutine(getDir));
     }
 
-    private IEnumerator RotateCoroutine(Vector3 value)
+    private IEnumerator RotateCoroutine(Quaternion endRotation)
     {
+        Quaternion startRotation = pivot.rotation;
         float t = 0;
-        Vector3 startDir = _curDir;
+
         while (t < rev_castingTime)
         {
             t += Time.deltaTime;
+            float progress = t / rev_castingTime;
 
-            _curDir = Vector3.Lerp(startDir, value, t / rev_castingTime);
-            pivot.rotation = Quaternion.Euler(_curDir); //포지션 돌리기
-            //pivot.Rotate(_curDir, Space.World);
+            pivot.rotation = Quaternion.Slerp(startRotation, endRotation, progress);
             yield return null;
         }
-        pivot.rotation = Quaternion.Euler(_curDir);
-        //pivot.Rotate(_curDir, Space.World);
+
+        pivot.rotation = endRotation;
     }
 
-    private Vector3 GetReverseDiraction(Vector3 value1)
+    private Quaternion GetReverseDirection(KeyCode value)
     {
-        _curDir = _endDir;
+        Vector3Int getRotDir = GetRotationDirection();
+        Quaternion targetRotation = pivot.rotation;
 
-        Vector3 value = (value1 - transform.up).normalized;
+        transform.localRotation = Quaternion.Euler(getRotDir);
 
-        if (Mathf.Abs(value.x) > Mathf.Abs(value.z))
+        if (value == KeyCode.W) //앞
         {
-            if (value.x > 0) //오른쪽
-            {
-                _endDir += new Vector3(0, 0, 90);
-                Debug.Log("오");
-            }
-            else if (value.x < 0) //왼쪽
-            {
-                _endDir += new Vector3(0, 0, -90);
-                Debug.Log("왼");
-            }
+            targetRotation *= Quaternion.AngleAxis(-90, transform.right);
+        }
+        else if (value == KeyCode.A) //왼
+        {
+            targetRotation *= Quaternion.AngleAxis(-90, transform.forward);
+        }
+        else if (value == KeyCode.S) //뒤
+        {
+            targetRotation *= Quaternion.AngleAxis(90, transform.right);
+        }
+        else if (value == KeyCode.D) //오
+        {   
+            targetRotation *= Quaternion.AngleAxis(90, transform.forward);
+        }       
+
+        else if (value == KeyCode.None) //가만히 있을때
+        {
+            targetRotation *= Quaternion.AngleAxis(180, transform.right);
         }
 
-        else if (Mathf.Abs(value.x) < Mathf.Abs(value.z))
-        {
-            if (value.z > 0) //앞쪽
-            {
-                _endDir += new Vector3(-90, 0, 0);
-                Debug.Log("앞");
-            }
-            else if (value.z < 0) //뒤쪽
-            {
-                _endDir += new Vector3(90, 0, 0);
-                Debug.Log("뒤");
-            }
-        }
-        else if (Mathf.Abs(value.x - value.z) <= 0) //가만히 있었을때
-        {
-            _endDir += new Vector3(180, 0, 0);
-        }
-
-        return _endDir;
+        return targetRotation;
     }
 
-    private void OnDrawGizmos()
+    private List<int> values = new List<int>()
+    {0, 90, 180, 270, 360 };
+    private Vector3Int GetRotationDirection()
     {
-        Gizmos.color = Color.green;
-        var pos = transform.TransformPoint(0, 0, 1f);
-        Gizmos.DrawWireSphere(pos, .5f);
-
+        int playerY = (int)transform.localRotation.eulerAngles.y;
+        if (playerY < 0)
+        {
+            playerY = 360 - playerY;
+        }
+        int value = values.OrderBy(x => Mathf.Abs(playerY - x)).First();
+        Debug.Log("playerY : " + playerY);
+        Debug.Log("value : " + value);
+        return new Vector3Int(0, value, 0);
     }
 }

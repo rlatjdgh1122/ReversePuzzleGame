@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class PlayerRotate : MonoBehaviour
 {
+    [Header("플레이어 위 아래 조절")]
+    [Range(30,85)] public int AngleXUpLimit = 80;
+    [Range(30,85)] public int AngleXDownLimit = 45;
     [Header("플레이어 화면 감도")]
     [SerializeField] private float sensitivity = 2.0f; // 마우스 감도
     [SerializeField] private Transform _playerTrm;
@@ -28,6 +31,6 @@ public class PlayerRotate : MonoBehaviour
         if (angle < -360) angle += 360f;
         if (angle > 360) angle -= 360f;
 
-        return Mathf.Clamp(angle, -85, 85);
+        return Mathf.Clamp(angle, -AngleXUpLimit, AngleXDownLimit);
     }
 }
