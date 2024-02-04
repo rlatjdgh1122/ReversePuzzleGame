@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 public class PlayerGravity : MonoBehaviour
 {
     [SerializeField] private Transform pivot;
+    [SerializeField] private Transform pivot2;
     [SerializeField] private float gravityPower;
 
     [SerializeField] private float rev_castingTime = 1f;
@@ -19,11 +20,24 @@ public class PlayerGravity : MonoBehaviour
     private void Awake()
     {
         _rb = transform.root.GetComponent<Rigidbody>();
+
+        OnRegister();
     }
+
 
     private void Start()
     {
         _rb.useGravity = false;
+    }
+
+    private void OnRegister()
+    {
+        SignalHub.OnJumpEventHandled += OnJump;
+    }
+
+    private void OnDestroy()
+    {
+        SignalHub.OnJumpEventHandled -= OnJump;
     }
 
     private void FixedUpdate()
@@ -33,7 +47,10 @@ public class PlayerGravity : MonoBehaviour
             _rb.AddForce(-transform.root.up * gravityPower, ForceMode.Acceleration);
         }
     }
-
+    private void OnJump(float power)
+    {
+        _rb.AddForce(transform.root.up * (power), ForceMode.Impulse); // 순간적인 힘
+    }
     public void OnPlayerReverseGravity(KeyCode value)
     {
         Quaternion getDir = GetReverseDirection(value);
@@ -65,30 +82,34 @@ public class PlayerGravity : MonoBehaviour
     private Quaternion GetReverseDirection(KeyCode value)
     {
         Vector3Int getRotDir = GetRotationDirection();
+
         Quaternion targetRotation = pivot.rotation;
+        pivot.localRotation = Quaternion.Euler(getRotDir);
+        transform.localRotation = Quaternion.Euler(0, transform.localEulerAngles.y - pivot.localEulerAngles.y, 0);
 
-        transform.localRotation = Quaternion.Euler(getRotDir);
 
+        Vector3 localRight = Vector3.right;
+        Vector3 localForward = Vector3.forward;
         if (value == KeyCode.W) //앞
         {
-            targetRotation *= Quaternion.AngleAxis(-90, transform.right);
+            targetRotation *= Quaternion.AngleAxis(-90, localRight);
         }
         else if (value == KeyCode.A) //왼
         {
-            targetRotation *= Quaternion.AngleAxis(-90, transform.forward);
+            targetRotation *= Quaternion.AngleAxis(-90, localForward);
         }
         else if (value == KeyCode.S) //뒤
         {
-            targetRotation *= Quaternion.AngleAxis(90, transform.right);
+            targetRotation *= Quaternion.AngleAxis(90, localRight);
         }
         else if (value == KeyCode.D) //오
-        {   
-            targetRotation *= Quaternion.AngleAxis(90, transform.forward);
-        }       
+        {
+            targetRotation *= Quaternion.AngleAxis(90, localForward);
+        }
 
         else if (value == KeyCode.None) //가만히 있을때
         {
-            targetRotation *= Quaternion.AngleAxis(180, transform.right);
+            targetRotation *= Quaternion.AngleAxis(180, Vector3.right);
         }
 
         return targetRotation;
@@ -104,8 +125,13 @@ public class PlayerGravity : MonoBehaviour
             playerY = 360 - playerY;
         }
         int value = values.OrderBy(x => Mathf.Abs(playerY - x)).First();
+
+        if (value == 360)
+            value = 0;
+
         Debug.Log("playerY : " + playerY);
         Debug.Log("value : " + value);
+
         return new Vector3Int(0, value, 0);
     }
 }

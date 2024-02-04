@@ -236,6 +236,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6c0442bae54eda46b6fbb6c24536feb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AngleXUpLimit: 80
+  AngleXDownLimit: 45
   sensitivity: 2
   _playerTrm: {fileID: 4628753847656423419}
 --- !u!1 &6403080991975120011
@@ -248,7 +250,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4628753847656423419}
   - component: {fileID: 1166264348626579060}
-  - component: {fileID: 6023493878350234890}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -289,7 +290,7 @@ MonoBehaviour:
   OnReverseGravityEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6023493878350234890}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerGravity, Assembly-CSharp
         m_MethodName: OnPlayerReverseGravity
         m_Mode: 0
@@ -331,21 +332,11 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6023493878350234890
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6403080991975120011}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b39ea50a5d3f694699dd4f34f073329, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pivot: {fileID: 2828066344443910018}
-  gravityPower: 0
-  rev_castingTime: 1
+  OnJumpEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  ipt_value: {x: 0, y: 0}
+  iptKey: 0
 --- !u!1 &8856780627640827153
 GameObject:
   m_ObjectHideFlags: 0

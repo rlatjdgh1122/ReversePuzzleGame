@@ -15,13 +15,16 @@ public class RigidbodyTest : MonoBehaviour
     void Update()
     {
         //이해를 돕기 위해서 Vector3.right 사용
+
+        Debug.Log("R : " + transform.right + " : " + Vector3.right);
+        Debug.Log("F : " + transform.forward + " : " + Vector3.forward);
         if (Input.GetKeyDown(KeyCode.W))
-            transform.rotation *= Quaternion.AngleAxis(-90, transform.right); //앞쪽
+            transform.rotation *= Quaternion.AngleAxis(-90, Vector3.right); //앞
         else if (Input.GetKeyDown(KeyCode.A))
-            transform.rotation *= Quaternion.AngleAxis(-90, transform.forward); //오른쪽
+            transform.rotation *= Quaternion.AngleAxis(-90, Vector3.forward); //왼
         else if (Input.GetKeyDown(KeyCode.S))
-            transform.rotation *= Quaternion.AngleAxis(90, transform.right); //오른쪽
-        else if(Input.GetKeyDown(KeyCode.D))
-            transform.rotation *= Quaternion.AngleAxis(90, transform.forward); //오른쪽
+            transform.rotation *= Quaternion.AngleAxis(90, Vector3.right); //뒤
+        else if (Input.GetKeyDown(KeyCode.D))
+            transform.rotation *= Quaternion.AngleAxis(90, Vector3.forward); //오
     }
 }
