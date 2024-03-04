@@ -14,6 +14,7 @@ public class RigidbodyTest : MonoBehaviour
     }
     void Update()
     {
+<<<<<<< Updated upstream
         //이해를 돕기 위해서 Vector3.right 사용
 
         Debug.Log("R : " + transform.right + " : " + Vector3.right);
@@ -26,5 +27,9 @@ public class RigidbodyTest : MonoBehaviour
             transform.rotation *= Quaternion.AngleAxis(90, Vector3.right); //뒤
         else if (Input.GetKeyDown(KeyCode.D))
             transform.rotation *= Quaternion.AngleAxis(90, Vector3.forward); //오
+=======
+        if (Input.GetKeyDown(KeyCode.E))
+            Physics.gravity = new Vector2(9.8f, 0);
+>>>>>>> Stashed changes
     }
 }
